@@ -1,293 +1,352 @@
 const express = require('express');
 const router = express.Router();
 
+
+
+
 module.exports = (db) => {
-    // Ruta para leer registros de la tabla "producto"
-    router.get('/productos', (req, res) => {
-        const sql = 'SELECT * FROM producto';
 
-        db.query(sql, (err, result) => {
-            if (err) {
-                console.error('Error al leer registros de producto:', err);
-                res.status(500).json({ error: 'Error al leer registros de producto' });
-            } else {
-                res.status(200).json(result);
-            }
-        });
+    /* 
+  # Leer todos los productos
+curl http://localhost:5000/crud/producto/read
+
+# Crear un nuevo producto
+curl -X POST -H "Content-Type: application/json" -d "{\"nombre\":\"Producto1\",\"precio_compra\":10.99,\"precio_venta\":19.99,\"descripcion\":\"Descripción del producto\",\"cantidad\":50,\"Categoria\":\"Electrónicos\"}" http://localhost:5000/crud/producto/create
+
+# Actualizar un producto existente por ID
+curl -X PUT -H "Content-Type: application/json" -d "{\"nombre\":\"NuevoNombre\",\"precio_compra\":12.99,\"precio_venta\":22.99,\"descripcion\":\"Nueva descripción\",\"cantidad\":60,\"Categoria\":\"Electrónicos\"}" http://localhost:5000/crud/producto/update/1
+
+# Eliminar un producto por ID
+curl -X DELETE http://localhost:5000/crud/producto/delete/1
+ */
+
+    // Rutas CRUD para la tabla "producto"
+router.get('/producto/read', (req, res) => {
+    // Consulta para obtener todos los productos
+    const sql = 'SELECT * FROM producto';
+    
+    // Ejecutar consulta
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error('Error al leer productos:', err);
+        res.status(500).json({ error: 'Error al leer productos' });
+      } else {
+        res.status(200).json(result);
+      }
     });
-
-    // Ruta para crear un nuevo registro en la tabla "producto"
-    router.post('/productos', (req, res) => {
-        const { nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria } = req.body;
-
-        if (!nombre || !precio_compra || !precio_venta || !descripcion || !cantidad || !Categoria) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'INSERT INTO producto (nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria) VALUES (?, ?, ?, ?, ?, ?)';
-        const values = [nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al insertar registro en producto:', err);
-                res.status(500).json({ error: 'Error al insertar registro en producto' });
-            } else {
-                res.status(201).json({ message: 'Registro creado en producto con éxito' });
-            }
-        });
+  });
+  
+  router.post('/producto/create', (req, res) => {
+    const { nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria } = req.body;
+  
+    if (!nombre || !precio_compra || !precio_venta || !descripcion || !cantidad || !Categoria) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+  
+    const sql = 'INSERT INTO producto (nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria) VALUES (?, ?, ?, ?, ?, ?)';
+    const values = [nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar producto:', err);
+        res.status(500).json({ error: 'Error al insertar producto' });
+      } else {
+        res.status(201).json({ message: 'Producto creado con éxito' });
+      }
     });
-
-    // Ruta para actualizar un registro existente en la tabla "producto" por ID
-    router.put('/productos/:id', (req, res) => {
-        const id = req.params.id;
-        const { nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria } = req.body;
-
-        if (!nombre || !precio_compra || !precio_venta || !descripcion || !cantidad || !Categoria) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'UPDATE producto SET nombre = ?, precio_compra = ?, precio_venta = ?, descripcion = ?, cantidad = ?, Categoria = ? WHERE id_producto = ?';
-        const values = [nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria, id];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al actualizar el registro en producto:', err);
-                res.status(500).json({ error: 'Error al actualizar el registro en producto' });
-            } else {
-                res.status(200).json({ message: 'Registro en producto actualizado con éxito' });
-            }
-        });
+  });
+  
+  router.put('/producto/update/:id', (req, res) => {
+    const id = req.params.id;
+    const { nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria } = req.body;
+  
+    if (!nombre || !precio_compra || !precio_venta || !descripcion || !cantidad || !Categoria) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+  
+    const sql = 'UPDATE producto SET nombre = ?, precio_compra = ?, precio_venta = ?, descripcion = ?, cantidad = ?, Categoria = ? WHERE id_producto = ?';
+    const values = [nombre, precio_compra, precio_venta, descripcion, cantidad, Categoria, id];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al actualizar producto:', err);
+        res.status(500).json({ error: 'Error al actualizar producto' });
+      } else {
+        res.status(200).json({ message: 'Producto actualizado con éxito' });
+      }
     });
-
-    // Ruta para eliminar un registro existente en la tabla "producto" por ID
-    router.delete('/productos/:id', (req, res) => {
-        const id = req.params.id;
-
-        const sql = 'DELETE FROM producto WHERE id_producto = ?';
-
-        db.query(sql, [id], (err, result) => {
-            if (err) {
-                console.error('Error al eliminar el registro en producto:', err);
-                res.status(500).json({ error: 'Error al eliminar el registro en producto' });
-            } else {
-                res.status(200).json({ message: 'Registro en producto eliminado con éxito' });
-            }
-        });
+  });
+  
+  router.delete('/producto/delete/:id', (req, res) => {
+    const id = req.params.id;
+  
+    const sql = 'DELETE FROM producto WHERE id_producto = ?';
+  
+    db.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error('Error al eliminar producto:', err);
+        res.status(500).json({ error: 'Error al eliminar producto' });
+      } else {
+        res.status(200).json({ message: 'Producto eliminado con éxito' });
+      }
     });
-    // Rutas para la tabla "consumibles"
-    router.get('/consumibles', (req, res) => {
-        const sql = 'SELECT * FROM consumibles';
+  });
 
-        db.query(sql, (err, result) => {
-            if (err) {
-                console.error('Error al leer registros de consumibles:', err);
-                res.status(500).json({ error: 'Error al leer registros de consumibles' });
-            } else {
-                res.status(200).json(result);
-            }
-        });
+ /*  # Leer todos los consumibles
+curl http://localhost:5000/crud/consumibles/read
+
+# Crear un nuevo consumible
+curl -X POST -H "Content-Type: application/json" -d "{\"id_producto\":1,\"fecha_vencimiento\":\"2023-12-31 23:59:59\"}" http://localhost:5000/crud/consumibles/create
+
+# Actualizar un consumible existente por ID
+curl -X PUT -H "Content-Type: application/json" -d "{\"fecha_vencimiento\":\"2024-12-31 23:59:59\"}" http://localhost:5000/crud/consumibles/update/1
+
+# Eliminar un consumible por ID
+curl -X DELETE http://localhost:5000/crud/consumibles/delete/1 */
+
+
+  // Rutas CRUD para la tabla "consumibles"
+router.get('/consumibles/read', (req, res) => {
+    // Consulta para obtener todos los consumibles
+    const sql = 'SELECT * FROM consumibles';
+    
+    // Ejecutar consulta
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error('Error al leer consumibles:', err);
+        res.status(500).json({ error: 'Error al leer consumibles' });
+      } else {
+        res.status(200).json(result);
+      }
     });
-
-    router.post('/consumibles', (req, res) => {
-        const { id_producto, fecha_vencimiento } = req.body;
-
-        if (!id_producto || !fecha_vencimiento) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'INSERT INTO consumibles (id_producto, fecha_vencimiento) VALUES (?, ?)';
-        const values = [id_producto, fecha_vencimiento];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al insertar registro en consumibles:', err);
-                res.status(500).json({ error: 'Error al insertar registro en consumibles' });
-            } else {
-                res.status(201).json({ message: 'Registro creado en consumibles con éxito' });
-            }
-        });
+  });
+  
+  router.post('/consumibles/create', (req, res) => {
+    const { id_producto, fecha_vencimiento } = req.body;
+  
+    if (!id_producto || !fecha_vencimiento) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+  
+    const sql = 'INSERT INTO consumibles (id_producto, fecha_vencimiento) VALUES (?, ?)';
+    const values = [id_producto, fecha_vencimiento];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar consumible:', err);
+        res.status(500).json({ error: 'Error al insertar consumible' });
+      } else {
+        res.status(201).json({ message: 'Consumible creado con éxito' });
+      }
     });
-
-    router.put('/consumibles/:id', (req, res) => {
-        const id = req.params.id;
-        const { id_producto, fecha_vencimiento } = req.body;
-
-        if (!id_producto || !fecha_vencimiento) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'UPDATE consumibles SET id_producto = ?, fecha_vencimiento = ? WHERE id_Consumible = ?';
-        const values = [id_producto, fecha_vencimiento, id];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al actualizar el registro en consumibles:', err);
-                res.status(500).json({ error: 'Error al actualizar el registro en consumibles' });
-            } else {
-                res.status(200).json({ message: 'Registro en consumibles actualizado con éxito' });
-            }
-        });
+  });
+  
+  router.put('/consumibles/update/:id', (req, res) => {
+    const id = req.params.id;
+    const { fecha_vencimiento } = req.body;
+  
+    if (!fecha_vencimiento) {
+      return res.status(400).json({ error: 'El campo "fecha_vencimiento" es obligatorio' });
+    }
+  
+    const sql = 'UPDATE consumibles SET fecha_vencimiento = ? WHERE id_Consumible = ?';
+    const values = [fecha_vencimiento, id];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al actualizar consumible:', err);
+        res.status(500).json({ error: 'Error al actualizar consumible' });
+      } else {
+        res.status(200).json({ message: 'Consumible actualizado con éxito' });
+      }
     });
-
-    router.delete('/consumibles/:id', (req, res) => {
-        const id = req.params.id;
-
-        const sql = 'DELETE FROM consumibles WHERE id_Consumible = ?';
-
-        db.query(sql, [id], (err, result) => {
-            if (err) {
-                console.error('Error al eliminar el registro en consumibles:', err);
-                res.status(500).json({ error: 'Error al eliminar el registro en consumibles' });
-            } else {
-                res.status(200).json({ message: 'Registro en consumibles eliminado con éxito' });
-            }
-        });
+  });
+  
+  router.delete('/consumibles/delete/:id', (req, res) => {
+    const id = req.params.id;
+  
+    const sql = 'DELETE FROM consumibles WHERE id_Consumible = ?';
+  
+    db.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error('Error al eliminar consumible:', err);
+        res.status(500).json({ error: 'Error al eliminar consumible' });
+      } else {
+        res.status(200).json({ message: 'Consumible eliminado con éxito' });
+      }
     });
+  });
+  
+ /*  # Leer todos los Videojuegos
+  curl http://localhost:5000/crud/Videojuegos/read
+  
+  # Crear un nuevo Videojuego
+  curl -X POST -H "Content-Type: application/json" -d "{\"id_producto\":1,\"plataforma\":\"PS5\"}" http://localhost:5000/crud/Videojuegos/create
+  
+  # Actualizar un Videojuego existente por ID
+  curl -X PUT -H "Content-Type: application/json" -d "{\"plataforma\":\"Xbox Series X\"}" http://localhost:5000/crud/Videojuegos/update/1
+  
+  # Eliminar un Videojuego por ID
+  curl -X DELETE http://localhost:5000/crud/Videojuegos/delete/1 */
 
-
-    // Rutas para la tabla "Videojuegos"
-    router.get('/videojuegos', (req, res) => {
-        const sql = 'SELECT * FROM Videojuegos';
-
-        db.query(sql, (err, result) => {
-            if (err) {
-                console.error('Error al leer registros de Videojuegos:', err);
-                res.status(500).json({ error: 'Error al leer registros de Videojuegos' });
-            } else {
-                res.status(200).json(result);
-            }
-        });
+  // Rutas CRUD para la tabla "Videojuegos"
+router.get('/Videojuegos/read', (req, res) => {
+    // Consulta para obtener todos los Videojuegos
+    const sql = 'SELECT * FROM Videojuegos';
+    
+    // Ejecutar consulta
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error('Error al leer Videojuegos:', err);
+        res.status(500).json({ error: 'Error al leer Videojuegos' });
+      } else {
+        res.status(200).json(result);
+      }
     });
-
-    router.post('/videojuegos', (req, res) => {
-        const { id_producto, plataforma } = req.body;
-
-        if (!id_producto || !plataforma) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'INSERT INTO Videojuegos (id_producto, plataforma) VALUES (?, ?)';
-        const values = [id_producto, plataforma];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al insertar registro en Videojuegos:', err);
-                res.status(500).json({ error: 'Error al insertar registro en Videojuegos' });
-            } else {
-                res.status(201).json({ message: 'Registro creado en Videojuegos con éxito' });
-            }
-        });
+  });
+  
+  router.post('/Videojuegos/create', (req, res) => {
+    const { id_producto, plataforma } = req.body;
+  
+    if (!id_producto || !plataforma) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+  
+    const sql = 'INSERT INTO Videojuegos (id_producto, plataforma) VALUES (?, ?)';
+    const values = [id_producto, plataforma];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar Videojuego:', err);
+        res.status(500).json({ error: 'Error al insertar Videojuego' });
+      } else {
+        res.status(201).json({ message: 'Videojuego creado con éxito' });
+      }
     });
-
-    router.put('/videojuegos/:id', (req, res) => {
-        const id = req.params.id;
-        const { id_producto, plataforma } = req.body;
-
-        if (!id_producto || !plataforma) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'UPDATE Videojuegos SET id_producto = ?, plataforma = ? WHERE id_videojuegos = ?';
-        const values = [id_producto, plataforma, id];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al actualizar el registro en Videojuegos:', err);
-                res.status(500).json({ error: 'Error al actualizar el registro en Videojuegos' });
-            } else {
-                res.status(200).json({ message: 'Registro en Videojuegos actualizado con éxito' });
-            }
-        });
+  });
+  
+  router.put('/Videojuegos/update/:id', (req, res) => {
+    const id = req.params.id;
+    const { plataforma } = req.body;
+  
+    if (!plataforma) {
+      return res.status(400).json({ error: 'El campo "plataforma" es obligatorio' });
+    }
+  
+    const sql = 'UPDATE Videojuegos SET plataforma = ? WHERE id_videojuegos = ?';
+    const values = [plataforma, id];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al actualizar Videojuego:', err);
+        res.status(500).json({ error: 'Error al actualizar Videojuego' });
+      } else {
+        res.status(200).json({ message: 'Videojuego actualizado con éxito' });
+      }
     });
-
-    router.delete('/videojuegos/:id', (req, res) => {
-        const id = req.params.id;
-
-        const sql = 'DELETE FROM Videojuegos WHERE id_videojuegos = ?';
-
-        db.query(sql, [id], (err, result) => {
-            if (err) {
-                console.error('Error al eliminar el registro en Videojuegos:', err);
-                res.status(500).json({ error: 'Error al eliminar el registro en Videojuegos' });
-            } else {
-                res.status(200).json({ message: 'Registro en Videojuegos eliminado con éxito' });
-            }
-        });
+  });
+  
+  router.delete('/Videojuegos/delete/:id', (req, res) => {
+    const id = req.params.id;
+  
+    const sql = 'DELETE FROM Videojuegos WHERE id_videojuegos = ?';
+  
+    db.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error('Error al eliminar Videojuego:', err);
+        res.status(500).json({ error: 'Error al eliminar Videojuego' });
+      } else {
+        res.status(200).json({ message: 'Videojuego eliminado con éxito' });
+      }
     });
+  });
 
+  
+/*   # Leer todos los Electrónicos
+curl http://localhost:5000/crud/Electronicos/read
 
-    // Ruta para leer registros de la tabla "Electronicos"
-    router.get('/electronicos', (req, res) => {
-        const sql = 'SELECT * FROM Electronicos';
+# Crear un nuevo Electrónico
+curl -X POST -H "Content-Type: application/json" -d "{\"id_producto\":1,\"marca\":\"NuevaMarca\"}" http://localhost:5000/crud/Electronicos/create
 
-        db.query(sql, (err, result) => {
-            if (err) {
-                console.error('Error al leer registros de Electronicos:', err);
-                res.status(500).json({ error: 'Error al leer registros de Electronicos' });
-            } else {
-                res.status(200).json(result);
-            }
-        });
+# Actualizar un Electrónico existente por ID
+curl -X PUT -H "Content-Type: application/json" -d "{\"marca\":\"MarcaActualizada\"}" http://localhost:5000/crud/Electronicos/update/1
+
+# Eliminar un Electrónico por ID
+curl -X DELETE http://localhost:5000/crud/Electronicos/delete/1 */
+
+// Rutas CRUD para la tabla "Electronicos"
+router.get('/Electronicos/read', (req, res) => {
+    // Consulta para obtener todos los Electronicos
+    const sql = 'SELECT * FROM Electronicos';
+    
+    // Ejecutar consulta
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error('Error al leer Electronicos:', err);
+        res.status(500).json({ error: 'Error al leer Electronicos' });
+      } else {
+        res.status(200).json(result);
+      }
     });
-
-    // Ruta para crear un nuevo registro en la tabla "Electronicos"
-    router.post('/electronicos', (req, res) => {
-        const { id_producto, marca } = req.body;
-
-        if (!id_producto || !marca) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'INSERT INTO Electronicos (id_producto, marca) VALUES (?, ?)';
-        const values = [id_producto, marca];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al insertar registro en Electronicos:', err);
-                res.status(500).json({ error: 'Error al insertar registro en Electronicos' });
-            } else {
-                res.status(201).json({ message: 'Registro creado en Electronicos con éxito' });
-            }
-        });
+  });
+  
+  router.post('/Electronicos/create', (req, res) => {
+    const { id_producto, marca } = req.body;
+  
+    if (!id_producto || !marca) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+  
+    const sql = 'INSERT INTO Electronicos (id_producto, marca) VALUES (?, ?)';
+    const values = [id_producto, marca];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar Electrónico:', err);
+        res.status(500).json({ error: 'Error al insertar Electrónico' });
+      } else {
+        res.status(201).json({ message: 'Electrónico creado con éxito' });
+      }
     });
-
-    // Ruta para actualizar un registro existente en la tabla "Electronicos" por ID
-    router.put('/electronicos/:id', (req, res) => {
-        const id = req.params.id;
-        const { id_producto, marca } = req.body;
-
-        if (!id_producto || !marca) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-        }
-
-        const sql = 'UPDATE Electronicos SET id_producto = ?, marca = ? WHERE id_electronicos = ?';
-        const values = [id_producto, marca, id];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error al actualizar el registro en Electronicos:', err);
-                res.status(500).json({ error: 'Error al actualizar el registro en Electronicos' });
-            } else {
-                res.status(200).json({ message: 'Registro en Electronicos actualizado con éxito' });
-            }
-        });
+  });
+  
+  router.put('/Electronicos/update/:id', (req, res) => {
+    const id = req.params.id;
+    const { marca } = req.body;
+  
+    if (!marca) {
+      return res.status(400).json({ error: 'El campo "marca" es obligatorio' });
+    }
+  
+    const sql = 'UPDATE Electronicos SET marca = ? WHERE id_electronicos = ?';
+    const values = [marca, id];
+  
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al actualizar Electrónico:', err);
+        res.status(500).json({ error: 'Error al actualizar Electrónico' });
+      } else {
+        res.status(200).json({ message: 'Electrónico actualizado con éxito' });
+      }
     });
-
-    // Ruta para eliminar un registro existente en la tabla "Electronicos" por ID
-    router.delete('/electronicos/:id', (req, res) => {
-        const id = req.params.id;
-
-        const sql = 'DELETE FROM Electronicos WHERE id_electronicos = ?';
-
-        db.query(sql, [id], (err, result) => {
-            if (err) {
-                console.error('Error al eliminar el registro en Electronicos:', err);
-                res.status(500).json({ error: 'Error al eliminar el registro en Electronicos' });
-            } else {
-                res.status(200).json({ message: 'Registro en Electronicos eliminado con éxito' });
-            }
-        });
+  });
+  
+  router.delete('/Electronicos/delete/:id', (req, res) => {
+    const id = req.params.id;
+  
+    const sql = 'DELETE FROM Electronicos WHERE id_electronicos = ?';
+  
+    db.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error('Error al eliminar Electrónico:', err);
+        res.status(500).json({ error: 'Error al eliminar Electrónico' });
+      } else {
+        res.status(200).json({ message: 'Electrónico eliminado con éxito' });
+      }
     });
+  });
+  
+  
 
     return router;
 };

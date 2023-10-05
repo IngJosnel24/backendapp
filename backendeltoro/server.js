@@ -11,6 +11,7 @@ const db = mysql.createConnection({
     password: 'ONEYKER2105',
     database: 'eltoro'
 });
+
 db.connect((err) => {
     if (err) {
         console.error('Error de conexión a la base de datos:', err);
@@ -20,13 +21,12 @@ db.connect((err) => {
 });
 
 app.use(cors());
+app.use(express.json());
 
-const crudRoutes = require('./routes/crudRoutes.js')(db); //Pasa la instancia de la base de datos a crudRoutes
+const crudRoutes = require('./routes/crudRoutes.js')(db);
 app.use('/crud', crudRoutes);
 
-
-// Iniciar el servidor 
+// Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor backend en funcionamiento en el puerto ${port}`);
 });
-
