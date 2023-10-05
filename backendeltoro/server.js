@@ -8,8 +8,8 @@ const port = 5000;
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'mysql2023',
-    database: 'eltoro'
+    password: 'ONEYKER2105',
+    database: 'world'
 });
 db.connect((err) => {
     if (err) {
@@ -20,6 +20,10 @@ db.connect((err) => {
 });
 
 app.use(cors());
+
+const crudRoutes = require('./routes/crudRoutes.js')(db); //Pasa la instancia de la base de datos a crudRoutes
+app.use('/crud', crudRoutes);
+
 
 // Iniciar el servidor 
 app.listen(port, () => {
